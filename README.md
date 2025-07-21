@@ -16,7 +16,7 @@ This project is **NOT intended for clinical or official use**, but as a learning
 ## Usage
 
 1. Place the raw images in: `data/raw/`
-2. Run ``main.py``
+2. Run ``main.py`` with ```python -m src.main```
 
 ## Limitations
 As this is a tool built using classic computer vision algorithms (thresholding, contour detection, morphological operations), it is heavily limited by factors such as:
@@ -32,3 +32,7 @@ As this is a tool built using classic computer vision algorithms (thresholding, 
 A more robust solution would likely involve deep learning models trained on a large dataset of labeled Colilert images. That said, this project intentionally avoids those techniques to focus on foundational image processing concepts, making it more transparent and easier to understand for learning purposes.
 
 Also, this tool still misses sometimes, even when everything is perfect.
+*Escherichia coli* detection, with blue light is not yet implemented.
+
+## Data
+All images were generously made available by the folks at [LABAC-UEL](https://share.google/xrxR72UWHsQ8GAbIq).

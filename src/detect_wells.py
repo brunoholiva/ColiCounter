@@ -7,8 +7,7 @@ def clean_mask(mask):
     closed = cv2.morphologyEx(opened, cv2.MORPH_CLOSE, kernel, iterations=2)
     return closed
 
-def detect_wells_from_image(image, area_threshold=1000):
-
+def detect_wells_from_image(image, area_threshold=2000):
     lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
     _, mask = cv2.threshold(lab[:, :, 2], 160, 255, cv2.THRESH_BINARY)
     mask_clean = clean_mask(mask)
@@ -17,25 +16,34 @@ def detect_wells_from_image(image, area_threshold=1000):
 
     h = image.shape[0]
     top_limit = h * 0.1
-    top_contours, other_contours = [], []
+    bottom_limit = h * 0.7
+
+    top_contours = []
+    usable_contours = []
 
     for c in contours:
         if cv2.contourArea(c) < 100:
             continue
         _, y, _, _ = cv2.boundingRect(c)
-        (top_contours if y < top_limit else other_contours).append(c)
+        if y < top_limit:
+            top_contours.append(c)
+        else:
+            usable_contours.append(c)
 
     if top_contours:
-        combined = np.vstack(top_contours)
-        other_contours.append(combined)
+        merged_top = np.vstack(top_contours)
+        usable_contours.append(merged_top)
 
     small_positives = []
     large_positives = []
 
-    for c in other_contours:
+    for c in usable_contours:
         area = cv2.contourArea(c)
+        _, y, _, _ = cv2.boundingRect(c)
+
         if area < area_threshold:
-            small_positives.append(c)
+            if y >= bottom_limit:  
+                small_positives.append(c)
         else:
             large_positives.append(c)
 
@@ -44,9 +52,9 @@ def detect_wells_from_image(image, area_threshold=1000):
 def draw_well_groups(img, small_contours, large_contours, output_path):
     result = img.copy()
     for c in small_contours:
-        cv2.drawContours(result, [c], -1, (0, 255, 0), 2)  # verde
+        cv2.drawContours(result, [c], -1, (0, 255, 0), 2)  
     for c in large_contours:
-        cv2.drawContours(result, [c], -1, (0, 0, 255), 2)  # vermelho
+        cv2.drawContours(result, [c], -1, (0, 0, 255), 2)
     cv2.imwrite(output_path, result)
     
 
@@ -57,13 +65,13 @@ if __name__ == "__main__":
 
     img = cv2.imread(image_path)
     if img is None:
-        raise FileNotFoundError(f"Imagem não encontrada: {image_path}")
+        raise FileNotFoundError(f"Image not found: {image_path}")
 
     small, large = detect_wells_from_image(img)
 
-    print(f"Total detectado: {len(small) + len(large)}")
-    print(f"Poços pequenos (positivos fracos?): {len(small)}")
-    print(f"Poços grandes (positivos fortes?): {len(large)}")
+    print(f"Total detected: {len(small) + len(large)}")
+    print(f"Small wells: {len(small)}")
+    print(f"Big wells: {len(large)}")
 
     draw_well_groups(img, small, large, output_path)
 

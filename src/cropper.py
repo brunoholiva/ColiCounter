@@ -34,6 +34,6 @@ def segment_plate(image_path):
     return cropped
 
 if __name__ == "__main__":
-    file_path = "data/raw/image11.jpg"
+    file_path = "data/raw/image1.jpg"
     segmented_image = segment_plate(file_path)
     cv2.imwrite("data/processed/segmented_image.jpg", segmented_image)
